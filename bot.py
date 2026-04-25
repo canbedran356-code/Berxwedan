@@ -19,7 +19,6 @@ DB_NAME = "warnings.db"
 BAD_WORDS = [
     "amk", "aq", "orospu", "piç", "sik", "yarrak", "fuck", "shit", "bitch",
     "mal", "gerizekalı", "salak", "aptal", "ananı", "annesini", "amına", "siktir"
-    # Buraya istediğin kadar kelime ekleyebilirsin
 ]
 
 LINK_REGEX = re.compile(r'http[s]?://|t\.me/|telegram\.me/|www\.')
@@ -63,7 +62,6 @@ async def is_admin(update: Update):
         return False
 
 async def log_action(context: ContextTypes.DEFAULT_TYPE, text: str):
-    """Log kanalına mesaj gönderir"""
     if LOG_CHANNEL_ID:
         try:
             await context.bot.send_message(LOG_CHANNEL_ID, text, parse_mode=ParseMode.MARKDOWN)
@@ -105,10 +103,5 @@ async def greet_chat_members(update: Update, context: ContextTypes.DEFAULT_TYPE)
         chat = result.chat
 
         keyboard = [
-            [InlineKeyboardButton("📜 Kuralları Oku", url="https://t.me/berxwedangrubu/123")],  # ← Burayı kendi kurallar linkinle değiştir!
-            [InlineKeyboardButton("👋 Selam Ver", callback_data="welcome_greet")]
-        ]
-
-        welcome_text = (
-            f"🔥 **Berxwedan!**\n\n"
-            f
+            [InlineKeyboardButton("📜 Kuralları Oku", url="https://t.me/berxwedangrubu/123")],  # ← Kendi kurallar linkini buraya koy
+            [InlineKeyboardButton("👋
