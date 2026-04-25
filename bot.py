@@ -17,8 +17,8 @@ DB_NAME = "warnings.db"
 
 # ====================== AYARLAR ======================
 BAD_WORDS = [
-    "amk", "aq", "orospu", "piç", "sik", "yarrak", "fuck", "shit", "bitch",
-    "mal", "gerizekalı", "salak", "aptal", "ananı", "annesini", "amına", "siktir"
+    "amk", "aq", "orospu", "pic", "sik", "yarrak", "fuck", "shit", "bitch",
+    "mal", "gerizekali", "salak", "aptal", "anani", "annesini", "amina", "siktir"
 ]
 
 LINK_REGEX = re.compile(r'http[s]?://|t\.me/|telegram\.me/|www\.')
@@ -51,7 +51,7 @@ async def remove_warning(chat_id, user_id):
         await db.commit()
         return await get_warnings(chat_id, user_id)
 
-# ====================== YARDIMCI FONKSİYONLAR ======================
+# ====================== YARDIMCI ======================
 async def is_admin(update: Update):
     if update.effective_chat.type == "private":
         return True
@@ -65,8 +65,8 @@ async def log_action(context: ContextTypes.DEFAULT_TYPE, text: str):
     if LOG_CHANNEL_ID:
         try:
             await context.bot.send_message(LOG_CHANNEL_ID, text, parse_mode=ParseMode.MARKDOWN)
-        except Exception as e:
-            print(f"Log gönderilemedi: {e}")
+        except Exception:
+            pass
 
 async def get_target_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message and update.message.reply_to_message:
@@ -89,7 +89,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if query.data == "welcome_greet":
         await query.edit_message_text(
-            text=f"👋 **Berxwedan!** {query.from_user.first_name} hoş geldin kardeşim 🔥\nGrubumuza katıldığın için mutluyuz ❤️",
+            text=f"👋 Berxwedan! {query.from_user.first_name} hoş geldin kardeşim 🔥\nGrubumuza katıldığın için mutluyuz ❤️",
             parse_mode=ParseMode.MARKDOWN
         )
 
@@ -97,11 +97,36 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def greet_chat_members(update: Update, context: ContextTypes.DEFAULT_TYPE):
     result = update.chat_member
 
-    # Yeni üye katıldı
     if result.new_chat_member.status == "member" and result.old_chat_member.status in ["left", "kicked"]:
         user = result.new_chat_member.user
         chat = result.chat
 
         keyboard = [
-            [InlineKeyboardButton("📜 Kuralları Oku", url="https://t.me/berxwedangrubu/123")],  # ← Kendi kurallar linkini buraya koy
-            [InlineKeyboardButton("👋
+            [InlineKeyboardButton("📜 Kuralları Oku", url="https://t.me/berxwedangrubu/123")],  
+            [InlineKeyboardButton("👋 Selam Ver", callback_data="welcome_greet")]
+        ]
+
+        welcome_text = (
+            f"🔥 **Berxwedan!**\n\n"
+            f"👋 Hoş geldin **{user.full_name}**!\n"
+            f"Gruba katıldığın için teşekkürler ❤️\n\n"
+            f"📜 Kurallara uy ve keyfini çıkar!"
+        )
+
+        try:
+            await context.bot.send_message(
+                chat_id=chat.id,
+                text=welcome_text,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode=ParseMode.MARKDOWN
+            )
+            await log_action(context, f"Hoşgeldin: [{user.full_name}](tg://user?id={user.id}) gruba katıldı.")
+        except Exception as e:
+            print(f"Hoşgeldin hatası: {e}")
+
+    elif result.new_chat_member.status in ["left", "kicked"] and result.old_chat_member.status == "member":
+        user = result.new_chat_member.user
+        chat = result.chat
+        goodbye_text = f"😔 **Güle güle...** 👋\n\n**{user.full_name}** gruptan ayrıldı.\nBerxwedan seni özleyecek!"
+
+        try
