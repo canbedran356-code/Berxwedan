@@ -1,9 +1,10 @@
 FROM python:3.11-slim
 
-# Gerekli sistem paketleri (ffmpeg + deno)
+# Sistem bağımlılıkları (ffmpeg + temel araçlar)
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Deno'yu yükle (yt-dlp için JS runtime)
