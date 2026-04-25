@@ -18,7 +18,8 @@ DB_NAME = "warnings.db"
 # ====================== AYARLAR ======================
 BAD_WORDS = [
     "amk", "aq", "orospu", "piç", "sik", "yarrak", "fuck", "shit", "bitch",
-    "mal", "gerizekalı", "salak", "aptal", "ananı", "annesini"  # Buraya daha fazla ekleyebilirsin
+    "mal", "gerizekalı", "salak", "aptal", "ananı", "annesini", "amına", "siktir"
+    # Buraya istediğin kadar kelime ekleyebilirsin
 ]
 
 LINK_REGEX = re.compile(r'http[s]?://|t\.me/|telegram\.me/|www\.')
@@ -62,3 +63,52 @@ async def is_admin(update: Update):
         return False
 
 async def log_action(context: ContextTypes.DEFAULT_TYPE, text: str):
+    """Log kanalına mesaj gönderir"""
+    if LOG_CHANNEL_ID:
+        try:
+            await context.bot.send_message(LOG_CHANNEL_ID, text, parse_mode=ParseMode.MARKDOWN)
+        except Exception as e:
+            print(f"Log gönderilemedi: {e}")
+
+async def get_target_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message and update.message.reply_to_message:
+        return update.message.reply_to_message.from_user
+    if context.args:
+        try:
+            user_id = int(context.args[0])
+            member = await context.bot.get_chat_member(update.effective_chat.id, user_id)
+            return member.user
+        except:
+            if update.message:
+                await update.message.reply_text("❌ Geçersiz User ID veya kullanıcı grupta değil.")
+            return None
+    return None
+
+# ====================== BUTON HANDLER ======================
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "welcome_greet":
+        await query.edit_message_text(
+            text=f"👋 **Berxwedan!** {query.from_user.first_name} hoş geldin kardeşim 🔥\nGrubumuza katıldığın için mutluyuz ❤️",
+            parse_mode=ParseMode.MARKDOWN
+        )
+
+# ====================== HOŞGELDİN & GÜLE GÜLE ======================
+async def greet_chat_members(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    result = update.chat_member
+
+    # Yeni üye katıldı
+    if result.new_chat_member.status == "member" and result.old_chat_member.status in ["left", "kicked"]:
+        user = result.new_chat_member.user
+        chat = result.chat
+
+        keyboard = [
+            [InlineKeyboardButton("📜 Kuralları Oku", url="https://t.me/berxwedangrubu/123")],  # ← Burayı kendi kurallar linkinle değiştir!
+            [InlineKeyboardButton("👋 Selam Ver", callback_data="welcome_greet")]
+        ]
+
+        welcome_text = (
+            f"🔥 **Berxwedan!**\n\n"
+            f
